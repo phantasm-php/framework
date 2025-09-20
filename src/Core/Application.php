@@ -1,34 +1,33 @@
 <?php
 
-namespace Framework\Core;
+namespace WeStacks\Framework\Core;
 
 use Dotenv\Dotenv;
-use Psr\Container\ContainerInterface;
+use WeStacks\Framework\Container\Attributes\Singleton;
+use WeStacks\Framework\Discovery\Discover;
+use WeStacks\Framework\Container\Container;
+use WeStacks\Framework\Contracts\Core\Application as ApplicationInterface;
+use WeStacks\Framework\Contracts\Discovery\Discover as DiscoverContract;
 
-class Application implements ContainerInterface
+#[Singleton(ApplicationInterface::class)]
+class Application implements ApplicationInterface
 {
-    protected static ?self $instance;
-
-    protected array $bindings = [];
-
-    protected array $instances = [];
-
-    protected function __construct(protected string $root)
-    {
-        Dotenv::createImmutable($this->root)->safeLoad();
-        Discover::load($this->root);
-
-        Discover::cache($this->root);
-    }
+    const VERSION = 'dev-main';
 
     public static function make(string $root): static
     {
-        return static::$instance ??= new static($root);
-    }
+        Dotenv::createImmutable($root)->safeLoad();
 
-    public static function instance(): ?static
-    {
-        return static::$instance ?? null;
+        $container = Container::instance();
+
+        $container->bind(
+            DiscoverContract::class,
+            new Discover($root),
+            true,
+            [Discover::class],
+        );
+
+        return $container->get(ApplicationInterface::class);
     }
 
     public function http()
@@ -38,48 +37,6 @@ class Application implements ContainerInterface
 
     public function console()
     {
-        return new ConsoleKernel();
-    }
-
-    public function bind(string $id, bool $scoped, callable|string|null $concrete = null): void
-    {
-        $concrete ??= $id;
-
-        $this->bindings[$id] = [$concrete, $scoped];
-    }
-
-    public function flush(): void
-    {
-        $this->instances = [];
-    }
-
-    public function has(string $id): bool
-    {
-        return isset($this->bindings[$id]);
-    }
-
-    public function get(string $id)
-    {
-        if (isset($this->instances[$id])) {
-            return $this->instances[$id];
-        }
-
-        if (! isset($this->bindings[$id])) {
-            return class_exists($id) ? new $id($this) : throw new \Exception('Class ' . $id . ' not found');
-        }
-
-        [$concrete, $scoped] = $this->bindings[$id];
-
-        if (is_string($concrete)) {
-            $concrete = class_exists($concrete) ? new $concrete($this) : throw new \Exception('Class ' . $concrete . ' not found');
-        } else {
-            $concrete = $concrete($this);
-        }
-
-        if ($scoped) {
-            $this->instances[$id] = $concrete;
-        }
-
-        return $concrete;
+        return new ConsoleKernel(getenv('APP_NAME') ?: 'WeStacks', self::VERSION);
     }
 }

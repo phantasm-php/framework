@@ -1,55 +1,72 @@
 <?php
 
-namespace Framework\Core;
+namespace WeStacks\Framework\Discovery;
 
-abstract class Discover
+use WeStacks\Framework\Container\Container;
+use WeStacks\Framework\Contracts\Discovery\Discover as DiscoverContract;
+
+class Discover implements DiscoverContract
 {
-    private static array $discovered = [];
+    private array $discovered = [];
 
-    public static function load(string $root)
+    public function __construct(private string $root)
     {
-        $cachePath = implode(DIRECTORY_SEPARATOR, [$root, 'service', 'cache', 'discover.php']);
-
-        if (! file_exists($cachePath)) {
-            return static::discover($root);
+        if (! file_exists($cachePath = $this->cachePath())) {
+            $this->discover();
+            return;
         }
 
-        static::$discovered = array_map(
+        $this->discovered = array_map(
             static fn (array $entries) => array_map('unserialize', $entries),
             require_once $cachePath,
         );
-    }
 
-    public static function cache($root)
-    {
-        $cachePath = implode(DIRECTORY_SEPARATOR, [$root, 'service', 'cache', 'discover.php']);
-
-        $references = var_export(array_map(
-            static fn ($entries) => array_map('serialize', $entries),
-            static::$discovered
-        ), true);
-
-        file_put_contents($cachePath, "<?php return {$references};");
-    }
-
-    private static function discover(string $root)
-    {
-        foreach (static::composerDiscover($root) as $class) {
-            $reflection = new \ReflectionClass(class_exists($class) ? $class : require $class);
-
-            static::scan($reflection);
-
-            foreach ($reflection->getMethods() as $method) {
-                static::scan($method);
-            }
-
-            foreach ($reflection->getProperties() as $property) {
-                static::scan($property);
+        foreach ($this->discovered as $discoverables) {
+            foreach ($discoverables as $discoverable) {
+                if ($discoverable instanceof Installable) {
+                    $discoverable->install(Container::instance());
+                }
             }
         }
     }
 
-    private static function scan(\Reflector $reflection)
+    private function cachePath()
+    {
+        return implode(DIRECTORY_SEPARATOR, [$this->root, 'service', 'cache', 'discover.php']);
+    }
+
+    public function cache(): void
+    {
+        $references = var_export(array_map(
+            static fn ($entries) => array_map('serialize', $entries),
+            $this->discovered
+        ), true);
+
+        file_put_contents($this->cachePath(), "<?php return {$references};");
+    }
+
+    private function discover()
+    {
+        foreach ($this->composerDiscover($this->root) as $class) {
+            if (! class_exists($class) && ! interface_exists($class)) {
+                continue;
+            }
+
+            $reflection = new \ReflectionClass($class);
+
+            $this->scan($reflection);
+
+            foreach ($reflection->getMethods() as $method) {
+                $this->scan($method);
+            }
+
+            foreach ($reflection->getProperties() as $property) {
+                $this->scan($property);
+            }
+        }
+    }
+
+    private function scan(\Reflector $reflection)
     {
         foreach ($reflection->getAttributes() as $attribute) {
             $name = $attribute->getName();
@@ -60,12 +77,16 @@ abstract class Discover
 
                 $instance->setSource($reflection);
 
-                static::$discovered[$name][] = $instance;
+                $this->discovered[$name][] = $instance;
+
+                if ($instance instanceof Installable) {
+                    $instance->install(Container::instance());
+                }
             }
         }
     }
 
-    private static function composerDiscover(string $appRoot)
+    private function composerDiscover(string $appRoot)
     {
         $source = implode(DIRECTORY_SEPARATOR, [$appRoot, 'vendor', 'composer', 'installed.json']);
         $source = json_decode(file_get_contents($source), true);
@@ -80,16 +101,16 @@ abstract class Discover
             if (isset($meta['discover']) && $meta['discover'] === true) {
                 $root = implode(DIRECTORY_SEPARATOR, [$appRoot, 'vendor', 'composer', $package['install-path']]);
 
-                yield from static::discoverFrom($root, $package['autoload']['psr-4']);
+                yield from $this->discoverFrom($root, $package['autoload']['psr-4']);
             }
         }
 
         $source = json_decode(file_get_contents($appRoot . DIRECTORY_SEPARATOR . 'composer.json'), true);
 
-        yield from static::discoverFrom($appRoot, $source['autoload']['psr-4']);
+        yield from $this->discoverFrom($appRoot, $source['autoload']['psr-4']);
     }
 
-    private static function discoverFrom(string $root, array $paths)
+    private function discoverFrom(string $root, array $paths)
     {
         foreach ($paths as $namespace => $_path) {
             if (!is_array($_path)) {
@@ -114,7 +135,7 @@ abstract class Discover
                     $relative = str_replace($path, '', $file->getPathname());
                     $class = $namespace . str_replace(DIRECTORY_SEPARATOR, '\\', substr($relative, 0, -4));
 
-                    yield (class_exists($class) ? $class : $file);
+                    yield (class_exists($class) || interface_exists($class) ? $class : $file);
                 }
             }
         }
