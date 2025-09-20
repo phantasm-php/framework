@@ -17,6 +17,8 @@ class Application implements ContainerInterface
     {
         Dotenv::createImmutable($this->root)->safeLoad();
         Discover::load($this->root);
+
+        Discover::cache($this->root);
     }
 
     public static function make(string $root): static

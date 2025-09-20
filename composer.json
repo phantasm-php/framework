@@ -2,27 +2,40 @@
     "name": "punyflash/php-framework",
     "type": "library",
     "license": "MIT",
-    "autoload": {
-        "psr-4": {
-            "Framework\\": "src/"
-        }
-    },
     "authors": [
         {
             "name": "Dmytro Morozov",
             "email": "puny.flash@gmail.com"
         }
     ],
-    "minimum-stability": "stable",
     "require": {
         "psr/container": "^2.0",
         "symfony/console": "^7.0",
         "symfony/http-kernel": "^7.0",
         "vlucas/phpdotenv": "^5.0"
     },
+    "require-dev": {
+        "pestphp/pest": "^4.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Framework\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
     "extra": {
         "framework": {
             "discover": true
         }
-    }
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "minimum-stability": "stable"
 }

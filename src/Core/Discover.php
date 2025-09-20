@@ -2,7 +2,7 @@
 
 namespace Framework\Core;
 
-abstract final class Discover
+abstract class Discover
 {
     private static array $discovered = [];
 
@@ -14,14 +14,20 @@ abstract final class Discover
             return static::discover($root);
         }
 
-        static::$discovered = array_map('unserialize', require $cachePath);
+        static::$discovered = array_map(
+            static fn (array $entries) => array_map('unserialize', $entries),
+            require_once $cachePath,
+        );
     }
 
     public static function cache($root)
     {
         $cachePath = implode(DIRECTORY_SEPARATOR, [$root, 'service', 'cache', 'discover.php']);
 
-        $references = var_export(array_map('serialize', static::$discovered), true);
+        $references = var_export(array_map(
+            static fn ($entries) => array_map('serialize', $entries),
+            static::$discovered
+        ), true);
 
         file_put_contents($cachePath, "<?php return {$references};");
     }
@@ -54,7 +60,7 @@ abstract final class Discover
 
                 $instance->setSource($reflection);
 
-                static::$discovered[] = $instance;
+                static::$discovered[$name][] = $instance;
             }
         }
     }
