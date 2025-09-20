@@ -28,18 +28,22 @@ class Application implements ContainerInterface
         return static::$instance ?? null;
     }
 
-    public function run(Scope $scope): void
+    public function http()
     {
-        $app = match ($scope) {
-            Scope::CONSOLE => new ConsoleApplication(),
-            default => throw new \Exception('Unknown scope ' . $scope)
-        };
-
         foreach ($this->discover() as $entry) {
             //
         }
 
-        $app->run();
+        return new HttpKernel();
+    }
+
+    public function console()
+    {
+        foreach ($this->discover() as $entry) {
+            //
+        }
+
+        return new ConsoleKernel();
     }
 
     protected function bind(string $id, bool $scoped, callable|string $concrete): void
