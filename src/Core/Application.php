@@ -2,26 +2,84 @@
 
 namespace Framework\Core;
 
-use Framework\Contracts\Core\Application as ApplicationContract;
+use Dotenv\Dotenv;
+use Psr\Container\ContainerInterface;
 
-class Application implements ApplicationContract
+class Application implements ContainerInterface
 {
-    public function __construct(
-        protected string $root
-    ) {
-        foreach ($this->discover() as [$class, $file]) {
-            // Load discovers
+    protected static ?self $instance;
+
+    protected array $bindings = [];
+
+    protected array $instances = [];
+
+    protected function __construct(protected string $root)
+    {
+        Dotenv::createImmutable($this->root)->safeLoad();
+    }
+
+    public static function make(string $root): static
+    {
+        return static::$instance ??= new static($root);
+    }
+
+    public static function instance(): ?static
+    {
+        return static::$instance ?? null;
+    }
+
+    public function run(Scope $scope): void
+    {
+        $app = match ($scope) {
+            Scope::CONSOLE => new ConsoleApplication(),
+            default => throw new \Exception('Unknown scope ' . $scope)
+        };
+
+        foreach ($this->discover() as $entry) {
+            //
         }
+
+        $app->run();
     }
 
-    public function console()
+    protected function bind(string $id, bool $scoped, callable|string $concrete): void
     {
-        //
+        $this->bindings[$id] = [$concrete, $scoped];
     }
 
-    public function http()
+    protected function flush(): void
     {
-        //
+        $this->instances = [];
+    }
+
+    public function has(string $id): bool
+    {
+        return isset($this->bindings[$id]);
+    }
+
+    public function get(string $id)
+    {
+        if (isset($this->instances[$id])) {
+            return $this->instances[$id];
+        }
+
+        if (! isset($this->bindings[$id])) {
+            return class_exists($id) ? new $id($this) : throw new \Exception('Class ' . $id . ' not found');
+        }
+
+        [$concrete, $scoped] = $this->bindings[$id];
+
+        if (is_string($concrete)) {
+            $concrete = class_exists($concrete) ? new $concrete($this) : throw new \Exception('Class ' . $concrete . ' not found');
+        } else {
+            $concrete = $concrete($this);
+        }
+
+        if ($scoped) {
+            $this->instances[$id] = $concrete;
+        }
+
+        return $concrete;
     }
 
     /**
@@ -29,18 +87,22 @@ class Application implements ApplicationContract
      */
     protected function discover(): \Generator
     {
-        $path = implode(DIRECTORY_SEPARATOR, [$this->root, 'vendor', 'composer', 'installed.json']);
+        $source = implode(DIRECTORY_SEPARATOR, [$this->root, 'vendor', 'composer', 'installed.json']);
 
-        $source = json_decode(file_get_contents($path), true);
+        $source = json_decode(file_get_contents($source), true);
 
         foreach ($source['packages'] as $package) {
             if (! isset($package['extra']['framework'])) {
                 continue;
             }
 
-            $root = implode(DIRECTORY_SEPARATOR, [$this->root, 'vendor', 'composer', $package['install-path']]);
+            $meta = $package['extra']['framework'];
 
-            yield from $this->discoverFrom($root, $package['extra']['framework']);
+            if (isset($meta['discover']) && $meta['discover'] === true) {
+                $root = implode(DIRECTORY_SEPARATOR, [$this->root, 'vendor', 'composer', $package['install-path']]);
+
+                yield from $this->discoverFrom($root, $package['autoload']['psr-4']);
+            }
         }
 
         $source = json_decode(file_get_contents($this->root . DIRECTORY_SEPARATOR . 'composer.json'), true);
@@ -73,7 +135,7 @@ class Application implements ApplicationContract
                     $relative = str_replace($path, '', $file->getPathname());
                     $class = $namespace . str_replace(DIRECTORY_SEPARATOR, '\\', substr($relative, 0, -4));
 
-                    yield [$class, $file];
+                    yield (class_exists($class) ? $class : $file);
                 }
             }
         }
