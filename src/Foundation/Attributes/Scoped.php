@@ -7,7 +7,7 @@ use WeStacks\Framework\Contracts\Foundation\Discovery\Installable;
 use WeStacks\Framework\Foundation\BindingType;
 
 #[\Attribute]
-class Singleton implements Installable
+class Scoped implements Installable
 {
     public array $aliases;
 
@@ -28,10 +28,10 @@ class Singleton implements Installable
         }
 
         $app->bind(
-            BindingType::SINGLETON,
+            BindingType::SCOPED,
             $reflection->getName(),
             $reflection->getName(),
-            $context->aliases,
+            $context->aliases
         );
     }
 }

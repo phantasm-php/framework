@@ -4,6 +4,7 @@ namespace WeStacks\Framework\Foundation\Attributes;
 
 use WeStacks\Framework\Contracts\Foundation\Application;
 use WeStacks\Framework\Contracts\Foundation\Discovery\Installable;
+use WeStacks\Framework\Foundation\BindingType;
 
 #[\Attribute]
 class Bind implements Installable
@@ -27,9 +28,9 @@ class Bind implements Installable
         }
 
         $app->bind(
+            BindingType::BIND,
             $reflection->getName(),
             $reflection->getName(),
-            false,
             $context->aliases
         );
     }

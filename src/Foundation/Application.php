@@ -19,9 +19,9 @@ class Application implements ApplicationContract
         Dotenv::createUnsafeImmutable($root)->safeLoad();
 
         $this->bind(
+            BindingType::SINGLETON,
             Application::class,
             $this,
-            true,
             [ApplicationContract::class],
         );
     }

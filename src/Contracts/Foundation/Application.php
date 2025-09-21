@@ -7,7 +7,7 @@ use WeStacks\Framework\Contracts\Discovery\Discover;
 
 interface Application extends ContainerInterface
 {
-    public function bind(string $abstract, callable|string|object|null $concrete = null, bool $cache = false, array $aliases = []): void;
+    public function bind(BindingType $type, string $abstract, callable|string|object|null $concrete = null, array $aliases = []): void;
 
     public function flush(): void;
 

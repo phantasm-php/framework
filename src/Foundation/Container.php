@@ -2,15 +2,18 @@
 
 namespace WeStacks\Framework\Foundation;
 
+use WeStacks\Framework\Contracts\Foundation\BindingType as BindingTypeContract;
+
 trait Container
 {
     protected array $bindings = [];
     protected array $instances = [];
     protected array $aliases = [];
+    protected array $scoped = [];
 
-    public function bind(string $abstract, callable|string|object|null $concrete = null, bool $cache = false, array $aliases = []): void
+    public function bind(BindingTypeContract $type, string $abstract, callable|string|object|null $concrete = null, array $aliases = []): void
     {
-        $this->bindings[$abstract] = [$concrete ?? $abstract, $cache];
+        $this->bindings[$abstract] = [$concrete ?? $abstract, $type];
 
         foreach ($aliases as $alias) {
             $this->aliases[$alias] = $abstract;
@@ -26,6 +29,8 @@ trait Container
     {
         if (isset($this->instances[$abstract])) {
             return $this->instances[$abstract];
+        } elseif (isset($this->scoped[$abstract])) {
+            return $this->scoped[$abstract];
         }
 
         if (isset($this->aliases[$abstract])) {
@@ -36,15 +41,25 @@ trait Container
             return new $abstract();
         }
 
-        [$concrete, $cache] = $this->bindings[$abstract];
+        [$concrete, $type] = $this->bindings[$abstract];
 
-        $concrete = match(true) {
-            $concrete instanceof \Closure => $concrete($this),
-            is_string($concrete) => $this->resolve(new \ReflectionClass($concrete)),
-            default => $concrete
+        if ($concrete instanceof \Closure) {
+            $concrete = $concrete($this);
+        } elseif (is_object($concrete)) {
+            return $concrete;
+        }
+
+        if (is_string($concrete)) {
+            $concrete = $this->resolve(new \ReflectionClass($concrete));
+        }
+
+        match ($type) {
+            BindingType::SINGLETON => $this->instances[$abstract] = $concrete,
+            BindingType::SCOPED => $this->scoped[$abstract] = $concrete,
+            default => null,
         };
 
-        if (isset($this->bindings[$abstract]) && $cache) {
+        if (isset($this->bindings[$abstract]) && $type === BindingType::SINGLETON) {
             $this->instances[$abstract] = $concrete;
         }
 
@@ -74,6 +89,6 @@ trait Container
 
     public function flush(): void
     {
-        $this->instances = [];
+        $this->scoped = [];
     }
 }
