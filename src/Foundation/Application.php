@@ -4,26 +4,25 @@ namespace WeStacks\Framework\Foundation;
 
 use Dotenv\Dotenv;
 use WeStacks\Framework\Contracts\Foundation\Application as ApplicationContract;
-use WeStacks\Framework\Contracts\Foundation\Discovery\Discover as DiscoverContract;
-use WeStacks\Framework\Foundation\Discovery\Discover;
 
 class Application implements ApplicationContract
 {
-    use Container;
+    use Container,
+        Discover;
 
     protected static ApplicationContract $instance;
 
-    protected function __construct(protected string $root)
+    protected function __construct(public readonly string $root)
     {
         define('FRAMEWORK_START', microtime(true));
 
         Dotenv::createUnsafeImmutable($root)->safeLoad();
 
         $this->bind(
-            ApplicationContract::class,
+            Application::class,
             $this,
             true,
-            [Application::class],
+            [ApplicationContract::class],
         );
     }
 
@@ -34,17 +33,13 @@ class Application implements ApplicationContract
 
     public function run(): void
     {
-        $this->bind(
-            DiscoverContract::class,
-            new Discover($this->root, $this),
-            true,
-            [Discover::class],
-        );
+        $this->discover();
 
-        if (php_sapi_name() === 'cli') {
-            echo 'CLI';
-        } else {
-            echo 'WEB';
-        }
+        $kernel = match (php_sapi_name()) {
+            'cli' => $this->get(\WeStacks\Framework\Contracts\Console\Kernel::class),
+            default => $this->get(\WeStacks\Framework\Contracts\Http\Kernel::class),
+        };
+
+        $kernel->handle();
     }
 }

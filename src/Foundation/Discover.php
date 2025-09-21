@@ -1,24 +1,17 @@
 <?php
 
-namespace WeStacks\Framework\Foundation\Discovery;
+namespace WeStacks\Framework\Foundation;
 
 use WeStacks\Framework\Contracts\Foundation\Application;
 use WeStacks\Framework\Contracts\Foundation\Discovery\Bootable;
-use WeStacks\Framework\Contracts\Foundation\Discovery\Discover as DiscoverContract;
 use WeStacks\Framework\Contracts\Foundation\Discovery\Installable;
 
-class Discover implements DiscoverContract
+/**
+ * @mixin Application
+ */
+trait Discover
 {
-    public function __construct(
-        protected string $root,
-        Application $container
-    ) {
-        foreach ($this->discover($container) as $callback) {
-            $callback();
-        }
-    }
-
-    private function discover(Application $container)
+    protected function discover()
     {
         $boot = [];
 
@@ -29,14 +22,14 @@ class Discover implements DiscoverContract
 
             $reflection = new \ReflectionClass($class);
 
-            $this->scan($reflection, $container, $boot);
+            $this->scan($reflection, $this, $boot);
 
             foreach ($reflection->getMethods() as $method) {
-                $this->scan($method, $container, $boot);
+                $this->scan($method, $this, $boot);
             }
 
             foreach ($reflection->getProperties() as $property) {
-                $this->scan($property, $container, $boot);
+                $this->scan($property, $this, $boot);
             }
         }
 

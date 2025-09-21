@@ -32,11 +32,15 @@ trait Container
             $abstract = $this->aliases[$abstract];
         }
 
+        if (! $this->has($abstract)) {
+            return new $abstract();
+        }
+
         [$concrete, $cache] = $this->bindings[$abstract];
 
         $concrete = match(true) {
-            $concrete instanceof \Closure => $concrete(),
-            is_string($concrete) => new $concrete,
+            $concrete instanceof \Closure => $concrete($this),
+            is_string($concrete) => $this->resolve(new \ReflectionClass($concrete)),
             default => $concrete
         };
 
@@ -45,6 +49,22 @@ trait Container
         }
 
         return $concrete;
+    }
+
+    protected function resolve(\Reflector $concrete): mixed
+    {
+        if ($concrete instanceof \ReflectionClass) {
+            $parameters = $concrete->getConstructor()?->getParameters() ?? [];
+            $dependencies = [];
+
+            foreach ($parameters as $parameter) {
+                $dependencies[] = $this->get($parameter->getType());
+            }
+
+            return $concrete->newInstanceArgs($dependencies);
+        }
+
+        throw new \Exception("You can only resolve classes");
     }
 
     public function has(string $id): bool
