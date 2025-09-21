@@ -3,29 +3,34 @@
 namespace WeStacks\Framework\Foundation\Attributes;
 
 use WeStacks\Framework\Contracts\Foundation\Application;
-use WeStacks\Framework\Foundation\Discovery\Discoverable;
-use WeStacks\Framework\Foundation\Discovery\Installable;
+use WeStacks\Framework\Contracts\Foundation\Discovery\Installable;
 
 #[\Attribute]
-class Singleton extends Discoverable implements Installable
+class Singleton implements Installable
 {
-    protected array $aliases;
+    public array $aliases;
 
     public function __construct(string ...$aliases)
     {
         $this->aliases = $aliases ?? [];
     }
 
-    public function setSource(\Reflector $source): void
+    /** @param Bind $context */
+    public static function install(Application $app, \Reflector $reflection, $context = null): void
     {
-        if (! $source instanceof \ReflectionClass) {
+        if (! $context) {
+            return;
+        }
+
+        if (! $reflection instanceof \ReflectionClass) {
             throw new \Exception("You can only bind classes");
         }
-        $this->source = $source->getName();
-    }
 
-    public function install(Application $app): void
-    {
-        $app->bind($this->source, $this->source, true, $this->aliases);
+        $app->bind(
+            $reflection->getName(),
+            $reflection->getName(),
+            true,
+            $context->aliases
+        );
     }
 }

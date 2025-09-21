@@ -3,52 +3,25 @@
 namespace WeStacks\Framework\Foundation\Discovery;
 
 use WeStacks\Framework\Contracts\Foundation\Application;
+use WeStacks\Framework\Contracts\Foundation\Discovery\Bootable;
 use WeStacks\Framework\Contracts\Foundation\Discovery\Discover as DiscoverContract;
+use WeStacks\Framework\Contracts\Foundation\Discovery\Installable;
 
 class Discover implements DiscoverContract
 {
-    protected array $discovered = [];
-
     public function __construct(
         protected string $root,
         Application $container
     ) {
-        if (! file_exists($cachePath = $this->cachePath())) {
-            $this->discover($container);
-            return;
+        foreach ($this->discover($container) as $callback) {
+            $callback();
         }
-
-        $this->discovered = array_map(
-            static fn (array $entries) => array_map('unserialize', $entries),
-            require_once $cachePath,
-        );
-
-        foreach ($this->discovered as $discoverables) {
-            foreach ($discoverables as $discoverable) {
-                if ($discoverable instanceof Installable) {
-                    $discoverable->install($container);
-                }
-            }
-        }
-    }
-
-    protected function cachePath()
-    {
-        return implode(DIRECTORY_SEPARATOR, [$this->root, 'service', 'discover.php']);
-    }
-
-    public function cache(): void
-    {
-        $references = var_export(array_map(
-            static fn ($entries) => array_map('serialize', $entries),
-            $this->discovered
-        ), true);
-
-        file_put_contents($this->cachePath(), "<?php return {$references};");
     }
 
     private function discover(Application $container)
     {
+        $boot = [];
+
         foreach ($this->composerDiscover($this->root) as $class) {
             if (! class_exists($class) && ! interface_exists($class)) {
                 continue;
@@ -56,35 +29,52 @@ class Discover implements DiscoverContract
 
             $reflection = new \ReflectionClass($class);
 
-            $this->scan($reflection, $container);
+            $this->scan($reflection, $container, $boot);
 
             foreach ($reflection->getMethods() as $method) {
-                $this->scan($method, $container);
+                $this->scan($method, $container, $boot);
             }
 
             foreach ($reflection->getProperties() as $property) {
-                $this->scan($property, $container);
+                $this->scan($property, $container, $boot);
             }
         }
+
+        return $boot;
     }
 
-    private function scan(\Reflector $reflection, Application $container)
+    /**
+     * @param \Reflector|\ReflectionMethod|\ReflectionProperty|\ReflectionClass $reflection
+     */
+    private function scan(\Reflector $reflection, Application $container, array &$boot = [])
     {
         foreach ($reflection->getAttributes() as $attribute) {
-            $name = $attribute->getName();
+            /** @var Installable|Bootable $instance */
+            $instance = $attribute->newInstance();
 
-            if (is_subclass_of($name, Discoverable::class)) {
-                /** @var Discoverable */
-                $instance = $attribute->newInstance();
-
-                $instance->setSource($reflection);
-
-                $this->discovered[$name][] = $instance;
-
-                if ($instance instanceof Installable) {
-                    $instance->install($container);
-                }
+            if ($instance instanceof Installable) {
+                $instance->install($container, $reflection, $instance);
             }
+
+            if ($instance instanceof Bootable) {
+                $boot[] = fn () => $instance->boot($container, $reflection, $instance);
+            }
+        }
+
+        if (! $reflection instanceof \ReflectionClass || $reflection->isInterface()) {
+            return;
+        }
+
+        if ($reflection->implementsInterface(Installable::class)) {
+            /** @var class-string<Installable> */
+            $class = $reflection->getName();
+            $class::install($container, $reflection);
+        }
+
+        if ($reflection->implementsInterface(Bootable::class)) {
+            /** @var class-string<Bootable> */
+            $class = $reflection->getName();
+            $boot[] = fn () => $class::boot($container, $reflection);
         }
     }
 

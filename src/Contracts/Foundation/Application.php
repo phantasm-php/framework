@@ -11,5 +11,5 @@ interface Application extends ContainerInterface
 
     public function flush(): void;
 
-    public function discover(string $root): static;
+    public function run(): void;
 }

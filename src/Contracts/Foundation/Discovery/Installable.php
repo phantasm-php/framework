@@ -1,6 +1,6 @@
 <?php
 
-namespace WeStacks\Framework\Foundation\Discovery;
+namespace WeStacks\Framework\Contracts\Foundation\Discovery;
 
 use WeStacks\Framework\Contracts\Foundation\Application;
 
@@ -9,5 +9,5 @@ interface Installable
     /**
      * Install the discovered service into the application.
      */
-    public function install(Application $app): void;
+    public static function install(Application $app, \Reflector $reflection, $context = null): void;
 }
