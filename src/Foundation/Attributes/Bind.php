@@ -1,10 +1,10 @@
 <?php
 
-namespace WeStacks\Framework\Container\Attributes;
+namespace WeStacks\Framework\Foundation\Attributes;
 
-use WeStacks\Framework\Contracts\Container\Container;
-use WeStacks\Framework\Discovery\Discoverable;
-use WeStacks\Framework\Discovery\Installable;
+use WeStacks\Framework\Contracts\Foundation\Application;
+use WeStacks\Framework\Foundation\Discovery\Discoverable;
+use WeStacks\Framework\Foundation\Discovery\Installable;
 
 #[\Attribute]
 class Bind extends Discoverable implements Installable
@@ -24,8 +24,8 @@ class Bind extends Discoverable implements Installable
         $this->source = $source->getName();
     }
 
-    public function install(Container $container): void
+    public function install(Application $app): void
     {
-        $container->bind($this->source, $this->source, false, $this->aliases);
+        $app->bind($this->source, $this->source, false, $this->aliases);
     }
 }

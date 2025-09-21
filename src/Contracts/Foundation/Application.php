@@ -1,12 +1,15 @@
 <?php
 
-namespace WeStacks\Framework\Contracts\Container;
+namespace WeStacks\Framework\Contracts\Foundation;
 
 use Psr\Container\ContainerInterface;
+use WeStacks\Framework\Contracts\Discovery\Discover;
 
-interface Container extends ContainerInterface
+interface Application extends ContainerInterface
 {
     public function bind(string $abstract, callable|string|object|null $concrete = null, bool $cache = false, array $aliases = []): void;
 
     public function flush(): void;
+
+    public function discover(string $root): static;
 }

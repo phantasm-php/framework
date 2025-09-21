@@ -1,24 +1,45 @@
 <?php
 
-namespace WeStacks\Framework\Container;
+namespace WeStacks\Framework\Foundation;
 
-use WeStacks\Framework\Contracts\Container\Container as ContainerInterface;
+use Dotenv\Dotenv;
+use WeStacks\Framework\Contracts\Foundation\Application as ApplicationContract;
+use WeStacks\Framework\Contracts\Foundation\Discovery\Discover as DiscoverContract;
+use WeStacks\Framework\Foundation\Discovery\Discover;
 
-class Container implements ContainerInterface
+class Application implements ApplicationContract
 {
-    protected static ?Container $instance = null;
+    protected static ?ApplicationContract $instance = null;
     protected array $bindings = [];
     protected array $instances = [];
     protected array $aliases = [];
 
-    protected function __construct()
-    {
-        $this->bind(ContainerInterface::class, $this, true);
-    }
+    protected function __construct() {}
 
     public static function instance(): static
     {
-        return static::$instance ??= new static();
+        return static::$instance ??= new static;
+    }
+
+    public function discover(string $root): static
+    {
+        Dotenv::createImmutable($root)->safeLoad();
+
+        $this->bind(
+            ApplicationContract::class,
+            $this,
+            true,
+            [Application::class],
+        );
+
+        $this->bind(
+            DiscoverContract::class,
+            new Discover($root, $this),
+            true,
+            [Discover::class],
+        );
+
+        return $this;
     }
 
     public function bind(string $abstract, callable|string|object|null $concrete = null, bool $cache = false, array $aliases = []): void
@@ -30,6 +51,11 @@ class Container implements ContainerInterface
         }
     }
 
+    /**
+     * @template T
+     * @param class-string<T> $abstract
+     * @return T
+     */
     public function get(string $abstract): mixed
     {
         if (isset($this->instances[$abstract])) {

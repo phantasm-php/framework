@@ -1,6 +1,6 @@
 <?php
 
-namespace WeStacks\Framework\Discovery;
+namespace WeStacks\Framework\Foundation\Discovery;
 
 use Reflector;
 

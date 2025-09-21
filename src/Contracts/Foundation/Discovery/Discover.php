@@ -1,6 +1,6 @@
 <?php
 
-namespace WeStacks\Framework\Contracts\Discovery;
+namespace WeStacks\Framework\Contracts\Foundation\Discovery;
 
 interface Discover
 {

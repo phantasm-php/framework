@@ -1,18 +1,20 @@
 <?php
 
-namespace WeStacks\Framework\Discovery;
+namespace WeStacks\Framework\Foundation\Discovery;
 
-use WeStacks\Framework\Container\Container;
-use WeStacks\Framework\Contracts\Discovery\Discover as DiscoverContract;
+use WeStacks\Framework\Contracts\Foundation\Application;
+use WeStacks\Framework\Contracts\Foundation\Discovery\Discover as DiscoverContract;
 
 class Discover implements DiscoverContract
 {
-    private array $discovered = [];
+    protected array $discovered = [];
 
-    public function __construct(private string $root)
-    {
+    public function __construct(
+        protected string $root,
+        Application $container
+    ) {
         if (! file_exists($cachePath = $this->cachePath())) {
-            $this->discover();
+            $this->discover($container);
             return;
         }
 
@@ -24,15 +26,15 @@ class Discover implements DiscoverContract
         foreach ($this->discovered as $discoverables) {
             foreach ($discoverables as $discoverable) {
                 if ($discoverable instanceof Installable) {
-                    $discoverable->install(Container::instance());
+                    $discoverable->install($container);
                 }
             }
         }
     }
 
-    private function cachePath()
+    protected function cachePath()
     {
-        return implode(DIRECTORY_SEPARATOR, [$this->root, 'service', 'cache', 'discover.php']);
+        return implode(DIRECTORY_SEPARATOR, [$this->root, 'service', 'discover.php']);
     }
 
     public function cache(): void
@@ -45,7 +47,7 @@ class Discover implements DiscoverContract
         file_put_contents($this->cachePath(), "<?php return {$references};");
     }
 
-    private function discover()
+    private function discover(Application $container)
     {
         foreach ($this->composerDiscover($this->root) as $class) {
             if (! class_exists($class) && ! interface_exists($class)) {
@@ -54,19 +56,19 @@ class Discover implements DiscoverContract
 
             $reflection = new \ReflectionClass($class);
 
-            $this->scan($reflection);
+            $this->scan($reflection, $container);
 
             foreach ($reflection->getMethods() as $method) {
-                $this->scan($method);
+                $this->scan($method, $container);
             }
 
             foreach ($reflection->getProperties() as $property) {
-                $this->scan($property);
+                $this->scan($property, $container);
             }
         }
     }
 
-    private function scan(\Reflector $reflection)
+    private function scan(\Reflector $reflection, Application $container)
     {
         foreach ($reflection->getAttributes() as $attribute) {
             $name = $attribute->getName();
@@ -80,7 +82,7 @@ class Discover implements DiscoverContract
                 $this->discovered[$name][] = $instance;
 
                 if ($instance instanceof Installable) {
-                    $instance->install(Container::instance());
+                    $instance->install($container);
                 }
             }
         }
