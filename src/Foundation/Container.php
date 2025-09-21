@@ -79,7 +79,7 @@ trait Container
             return $concrete->newInstanceArgs($dependencies);
         }
 
-        throw new \Exception("You can only resolve classes");
+        throw new \Exception('You can only resolve classes');
     }
 
     public function has(string $id): bool

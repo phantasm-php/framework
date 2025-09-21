@@ -3,8 +3,8 @@
 namespace WeStacks\Framework\Http;
 
 use WeStacks\Framework\Contracts\Foundation\Application;
-use WeStacks\Framework\Foundation\Attributes\Singleton;
 use WeStacks\Framework\Contracts\Http\Kernel as KernelContract;
+use WeStacks\Framework\Foundation\Attributes\Singleton;
 
 #[Singleton(KernelContract::class)]
 class Kernel implements KernelContract

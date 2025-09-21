@@ -77,13 +77,13 @@ trait Discover
         $source = json_decode(file_get_contents($source), true);
 
         foreach ($source['packages'] as $package) {
-            if (!isset($package['extra']['framework'])) {
+            if (! isset($package['extra']['framework'])) {
                 continue;
             }
 
             $meta = $package['extra']['framework'];
 
-            if (isset($meta['discover']) && $meta['discover'] === true) {
+            if (isset($meta['discover']) && $meta['discover']) {
                 $root = implode(DIRECTORY_SEPARATOR, [$appRoot, 'vendor', 'composer', $package['install-path']]);
 
                 yield from $this->discoverFrom($root, $package['autoload']['psr-4']);
@@ -98,17 +98,17 @@ trait Discover
     private function discoverFrom(string $root, array $paths)
     {
         foreach ($paths as $namespace => $_path) {
-            if (!is_array($_path)) {
+            if (! is_array($_path)) {
                 $_path = [$_path];
             }
 
             foreach ($_path as $path) {
-                if (!is_dir($path = $root . DIRECTORY_SEPARATOR . $path)) {
+                if (! is_dir($path = $root . DIRECTORY_SEPARATOR . $path)) {
                     continue;
                 }
 
                 $iterator = new \RecursiveIteratorIterator(
-                    new \RecursiveDirectoryIterator($path, \RecursiveDirectoryIterator::SKIP_DOTS)
+                    new \RecursiveDirectoryIterator($path, \RecursiveDirectoryIterator::SKIP_DOTS),
                 );
 
                 foreach ($iterator as $file) {
@@ -120,7 +120,7 @@ trait Discover
                     $relative = str_replace($path, '', $file->getPathname());
                     $class = $namespace . str_replace(DIRECTORY_SEPARATOR, '\\', substr($relative, 0, -4));
 
-                    yield (class_exists($class) || interface_exists($class) ? $class : $file);
+                    yield class_exists($class) || interface_exists($class) ? $class : $file;
                 }
             }
         }

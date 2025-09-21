@@ -7,13 +7,13 @@ use WeStacks\Framework\Contracts\Foundation\Application as ApplicationContract;
 
 class Application implements ApplicationContract
 {
-    use Container,
-        Discover;
+    use Container, Discover;
 
     protected static ApplicationContract $instance;
 
-    protected function __construct(public readonly string $root)
-    {
+    protected function __construct(
+        public readonly string $root,
+    ) {
         define('FRAMEWORK_START', microtime(true));
 
         Dotenv::createUnsafeImmutable($root)->safeLoad();

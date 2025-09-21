@@ -24,14 +24,14 @@ class Scoped implements Installable
         }
 
         if (! $reflection instanceof \ReflectionClass) {
-            throw new \Exception("You can only bind classes");
+            throw new \Exception('You can only bind classes');
         }
 
         $app->bind(
             BindingType::SCOPED,
             $reflection->getName(),
             $reflection->getName(),
-            $context->aliases
+            $context->aliases,
         );
     }
 }
