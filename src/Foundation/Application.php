@@ -24,6 +24,8 @@ class Application implements ApplicationContract
             $this,
             [ApplicationContract::class],
         );
+
+        $this->discover();
     }
 
     public static function instance(?string $root = null): static
@@ -31,15 +33,11 @@ class Application implements ApplicationContract
         return static::$instance ??= new static($root);
     }
 
-    public function run(): void
+    public function run(...$args): mixed
     {
-        $this->discover();
-
-        $kernel = match (php_sapi_name()) {
-            'cli' => $this->get(\WeStacks\Framework\Contracts\Console\Kernel::class),
-            default => $this->get(\WeStacks\Framework\Contracts\Http\Kernel::class),
+        return match (php_sapi_name()) {
+            'cli' => $this->get(\WeStacks\Framework\Contracts\Console\Kernel::class)->run(...$args),
+            default => $this->get(\WeStacks\Framework\Contracts\Http\Kernel::class)->run(...$args),
         };
-
-        $kernel->handle();
     }
 }

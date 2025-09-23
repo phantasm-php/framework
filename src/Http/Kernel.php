@@ -13,8 +13,10 @@ class Kernel implements KernelContract
         protected Application $app,
     ) {}
 
-    public function handle(): void
+    public function run(...$args)
     {
         echo 'WEB';
+
+        return;
     }
 }

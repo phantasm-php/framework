@@ -38,7 +38,7 @@ trait Container
         }
 
         if (! $this->has($abstract)) {
-            return new $abstract();
+            return class_exists($abstract) ? $this->resolve(new \ReflectionClass($abstract)) : null;
         }
 
         [$concrete, $type] = $this->bindings[$abstract];
@@ -76,7 +76,7 @@ trait Container
                 $dependencies[] = $this->get($parameter->getType());
             }
 
-            return $concrete->newInstanceArgs($dependencies);
+            return $concrete->newInstanceArgs(array_filter($dependencies));
         }
 
         throw new \Exception('You can only resolve classes');
