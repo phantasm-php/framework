@@ -27,14 +27,14 @@ trait Container
      */
     public function get(string $abstract): mixed
     {
+        if (isset($this->aliases[$abstract])) {
+            $abstract = $this->aliases[$abstract];
+        }
+
         if (isset($this->instances[$abstract])) {
             return $this->instances[$abstract];
         } elseif (isset($this->scoped[$abstract])) {
             return $this->scoped[$abstract];
-        }
-
-        if (isset($this->aliases[$abstract])) {
-            $abstract = $this->aliases[$abstract];
         }
 
         if (! $this->has($abstract)) {
@@ -58,10 +58,6 @@ trait Container
             BindingType::SCOPED => $this->scoped[$abstract] = $concrete,
             default => null,
         };
-
-        if (isset($this->bindings[$abstract]) && $type === BindingType::SINGLETON) {
-            $this->instances[$abstract] = $concrete;
-        }
 
         return $concrete;
     }

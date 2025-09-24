@@ -33,7 +33,9 @@ trait Discover
             }
         }
 
-        return $boot;
+        foreach ($boot as $bootable) {
+            $bootable();
+        }
     }
 
     /**
