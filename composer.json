@@ -1,5 +1,6 @@
 {
-    "name": "punyflash/php-framework",
+    "name": "phantasm-php/framework",
+    "version": "dev-main",
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -22,7 +23,7 @@
     },
     "autoload": {
         "psr-4": {
-            "WeStacks\\Framework\\": "src/"
+            "Phantasm\\": "src/"
         }
     },
     "autoload-dev": {

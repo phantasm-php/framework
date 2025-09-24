@@ -1,10 +1,10 @@
 <?php
 
-namespace WeStacks\Framework\Http;
+namespace Phantasm\Http;
 
-use WeStacks\Framework\Contracts\Foundation\Application;
-use WeStacks\Framework\Contracts\Http\Kernel as KernelContract;
-use WeStacks\Framework\Foundation\Attributes\Singleton;
+use Phantasm\Contracts\Foundation\Application;
+use Phantasm\Contracts\Http\Kernel as KernelContract;
+use Phantasm\Foundation\Attributes\Singleton;
 
 #[Singleton(KernelContract::class)]
 class Kernel implements KernelContract

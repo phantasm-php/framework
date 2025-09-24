@@ -1,6 +1,6 @@
 <?php
 
-namespace WeStacks\Framework\Contracts\Foundation;
+namespace Phantasm\Contracts\Foundation;
 
 use Psr\Container\ContainerInterface;
 

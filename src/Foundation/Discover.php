@@ -1,10 +1,10 @@
 <?php
 
-namespace WeStacks\Framework\Foundation;
+namespace Phantasm\Foundation;
 
-use WeStacks\Framework\Contracts\Foundation\Application;
-use WeStacks\Framework\Contracts\Foundation\Discovery\Bootable;
-use WeStacks\Framework\Contracts\Foundation\Discovery\Installable;
+use Phantasm\Contracts\Foundation\Application;
+use Phantasm\Contracts\Foundation\Discovery\Bootable;
+use Phantasm\Contracts\Foundation\Discovery\Installable;
 
 /**
  * @mixin Application

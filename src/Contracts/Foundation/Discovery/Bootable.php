@@ -1,8 +1,8 @@
 <?php
 
-namespace WeStacks\Framework\Contracts\Foundation\Discovery;
+namespace Phantasm\Contracts\Foundation\Discovery;
 
-use WeStacks\Framework\Contracts\Foundation\Application;
+use Phantasm\Contracts\Foundation\Application;
 
 interface Bootable
 {

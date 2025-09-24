@@ -1,6 +1,6 @@
 <?php
 
-namespace WeStacks\Framework\Console\Attributes;
+namespace Phantasm\Console\Attributes;
 
 #[\Attribute]
 class Option

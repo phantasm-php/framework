@@ -1,10 +1,10 @@
 <?php
 
-namespace WeStacks\Framework\Foundation\Attributes;
+namespace Phantasm\Foundation\Attributes;
 
-use WeStacks\Framework\Contracts\Foundation\Application;
-use WeStacks\Framework\Contracts\Foundation\Discovery\Installable;
-use WeStacks\Framework\Foundation\BindingType;
+use Phantasm\Contracts\Foundation\Application;
+use Phantasm\Contracts\Foundation\Discovery\Installable;
+use Phantasm\Foundation\BindingType;
 
 #[\Attribute]
 class Bind implements Installable

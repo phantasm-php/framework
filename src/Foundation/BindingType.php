@@ -1,8 +1,8 @@
 <?php
 
-namespace WeStacks\Framework\Foundation;
+namespace Phantasm\Foundation;
 
-use WeStacks\Framework\Contracts\Foundation\BindingType as BindingTypeContract;
+use Phantasm\Contracts\Foundation\BindingType as BindingTypeContract;
 
 enum BindingType implements BindingTypeContract
 {

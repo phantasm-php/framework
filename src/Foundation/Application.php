@@ -1,9 +1,9 @@
 <?php
 
-namespace WeStacks\Framework\Foundation;
+namespace Phantasm\Foundation;
 
 use Dotenv\Dotenv;
-use WeStacks\Framework\Contracts\Foundation\Application as ApplicationContract;
+use Phantasm\Contracts\Foundation\Application as ApplicationContract;
 
 class Application implements ApplicationContract
 {
@@ -36,8 +36,8 @@ class Application implements ApplicationContract
     public function run(...$args): mixed
     {
         return match (php_sapi_name()) {
-            'cli' => $this->get(\WeStacks\Framework\Contracts\Console\Kernel::class)->run(...$args),
-            default => $this->get(\WeStacks\Framework\Contracts\Http\Kernel::class)->run(...$args),
+            'cli' => $this->get(\Phantasm\Contracts\Console\Kernel::class)->run(...$args),
+            default => $this->get(\Phantasm\Contracts\Http\Kernel::class)->run(...$args),
         };
     }
 }

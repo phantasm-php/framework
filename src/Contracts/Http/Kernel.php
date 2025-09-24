@@ -1,6 +1,6 @@
 <?php
 
-namespace WeStacks\Framework\Contracts\Http;
+namespace Phantasm\Contracts\Http;
 
 interface Kernel
 {

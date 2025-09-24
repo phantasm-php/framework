@@ -1,11 +1,11 @@
 <?php
 
-namespace WeStacks\Framework\Console;
+namespace Phantasm\Console;
 
 use Symfony\Component\Console\Application as Console;
-use WeStacks\Framework\Contracts\Console\Kernel as KernelContract;
-use WeStacks\Framework\Contracts\Foundation\Application;
-use WeStacks\Framework\Foundation\Attributes\Singleton;
+use Phantasm\Contracts\Console\Kernel as KernelContract;
+use Phantasm\Contracts\Foundation\Application;
+use Phantasm\Foundation\Attributes\Singleton;
 
 #[Singleton(KernelContract::class)]
 class Kernel extends Console implements KernelContract

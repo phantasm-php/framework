@@ -1,6 +1,6 @@
 <?php
 
-namespace WeStacks\Framework\Contracts\Console;
+namespace Phantasm\Contracts\Console;
 
 interface Kernel
 {

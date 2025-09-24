@@ -1,13 +1,13 @@
 <?php
 
-namespace WeStacks\Framework\Console\Attributes;
+namespace Phantasm\Console\Attributes;
 
 use Symfony\Component\Console\Command\Command as ConsoleCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use WeStacks\Framework\Contracts\Foundation\Application;
-use WeStacks\Framework\Contracts\Foundation\Discovery\Bootable;
+use Phantasm\Contracts\Foundation\Application;
+use Phantasm\Contracts\Foundation\Discovery\Bootable;
 
 #[\Attribute]
 class Command implements Bootable
@@ -29,7 +29,7 @@ class Command implements Bootable
         }
 
         /** @var \Symfony\Component\Console\Application */
-        $kernel = $app->get(\WeStacks\Framework\Contracts\Console\Kernel::class);
+        $kernel = $app->get(\Phantasm\Contracts\Console\Kernel::class);
 
         // TODO: optional name, generate from class name + method
         $command = new ConsoleCommand($context->name);
