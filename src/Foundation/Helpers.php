@@ -2,14 +2,14 @@
 
 namespace Phantasm\Foundation;
 
-
-if (! function_exists(__NAMESPACE__.'\app')) {
+if (!function_exists(__NAMESPACE__ . '\app')) {
     /**
      * @template T
-     * @param class-string<T>|null $abstract
+     *
+     * @param  class-string<T>|null  $abstract
      * @return T|Application
      */
-    function app(?string $abstract = null)
+    function app(null|string $abstract = null)
     {
         $app = Application::instance();
 
@@ -17,7 +17,7 @@ if (! function_exists(__NAMESPACE__.'\app')) {
     }
 }
 
-if (! function_exists(__NAMESPACE__.'\env')) {
+if (!function_exists(__NAMESPACE__ . '\env')) {
     function env(string $key, $default = null): mixed
     {
         return getenv($key) ?: $default;

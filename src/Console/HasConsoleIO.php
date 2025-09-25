@@ -2,14 +2,17 @@
 
 namespace Phantasm\Console;
 
-use Symfony\Component\Console\Command\Command;
 use Phantasm\Contracts\Console\IO;
+use Symfony\Component\Console\Command\Command;
+
 use function Phantasm\Foundation\app;
 
 trait HasConsoleIO
 {
     public const SUCCESS = Command::SUCCESS;
+
     public const FAILURE = Command::FAILURE;
+
     public const INVALID = Command::INVALID;
 
     protected function io(): IO

@@ -19,19 +19,14 @@ class Singleton implements Installable
     /** @param Bind $context */
     public static function install(Application $app, \Reflector $reflection, $context = null): void
     {
-        if (! $context) {
+        if (!$context) {
             return;
         }
 
-        if (! $reflection instanceof \ReflectionClass) {
+        if (!$reflection instanceof \ReflectionClass) {
             throw new \Exception('You can only bind classes');
         }
 
-        $app->bind(
-            BindingType::SINGLETON,
-            $reflection->getName(),
-            $reflection->getName(),
-            $context->aliases,
-        );
+        $app->bind(BindingType::SINGLETON, $reflection->getName(), $reflection->getName(), $context->aliases);
     }
 }

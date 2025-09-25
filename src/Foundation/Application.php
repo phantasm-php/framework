@@ -18,24 +18,19 @@ class Application implements ApplicationContract
 
         Dotenv::createUnsafeImmutable($root)->safeLoad();
 
-        $this->bind(
-            BindingType::SINGLETON,
-            Application::class,
-            $this,
-            [ApplicationContract::class],
-        );
+        $this->bind(BindingType::SINGLETON, Application::class, $this, [ApplicationContract::class]);
 
         $this->discover();
     }
 
-    public function version(): ?string
+    public function version(): null|string
     {
         $composer = json_decode(file_get_contents($this->root . '/composer.json'), true);
 
         return $composer['version'] ?? null;
     }
 
-    public static function instance(?string $root = null): static
+    public static function instance(null|string $root = null): static
     {
         return static::$instance ??= new static($root);
     }

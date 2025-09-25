@@ -16,7 +16,5 @@ class Kernel implements KernelContract
     public function run(...$args)
     {
         echo 'WEB';
-
-        return;
     }
 }

@@ -7,12 +7,19 @@ use Phantasm\Contracts\Foundation\BindingType as BindingTypeContract;
 trait Container
 {
     protected array $bindings = [];
+
     protected array $instances = [];
+
     protected array $aliases = [];
+
     protected array $scoped = [];
 
-    public function bind(BindingTypeContract $type, string $abstract, callable|string|object|null $concrete = null, array $aliases = []): void
-    {
+    public function bind(
+        BindingTypeContract $type,
+        string $abstract,
+        callable|string|object|null $concrete = null,
+        array $aliases = [],
+    ): void {
         $this->bindings[$abstract] = [$concrete ?? $abstract, $type];
 
         foreach ($aliases as $alias) {
@@ -22,7 +29,8 @@ trait Container
 
     /**
      * @template T
-     * @param class-string<T> $abstract
+     *
+     * @param  class-string<T>  $abstract
      * @return T
      */
     public function get(string $abstract): mixed
@@ -37,7 +45,7 @@ trait Container
             return $this->scoped[$abstract];
         }
 
-        if (! $this->has($abstract)) {
+        if (!$this->has($abstract)) {
             return class_exists($abstract) ? $this->resolve(new \ReflectionClass($abstract)) : null;
         }
 

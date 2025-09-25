@@ -16,7 +16,7 @@ trait Discover
         $boot = [];
 
         foreach ($this->composerDiscover($this->root) as $class) {
-            if (! class_exists($class) && ! interface_exists($class)) {
+            if (!class_exists($class) && !interface_exists($class)) {
                 continue;
             }
 
@@ -39,7 +39,7 @@ trait Discover
     }
 
     /**
-     * @param \Reflector|\ReflectionMethod|\ReflectionProperty|\ReflectionClass $reflection
+     * @param  \Reflector|\ReflectionMethod|\ReflectionProperty|\ReflectionClass  $reflection
      */
     private function scan(\Reflector $reflection, Application $container, array &$boot = [])
     {
@@ -52,11 +52,11 @@ trait Discover
             }
 
             if ($instance instanceof Bootable) {
-                $boot[] = fn () => $instance->boot($container, $reflection, $instance);
+                $boot[] = fn() => $instance->boot($container, $reflection, $instance);
             }
         }
 
-        if (! $reflection instanceof \ReflectionClass || $reflection->isInterface()) {
+        if (!$reflection instanceof \ReflectionClass || $reflection->isInterface()) {
             return;
         }
 
@@ -69,7 +69,7 @@ trait Discover
         if ($reflection->implementsInterface(Bootable::class)) {
             /** @var class-string<Bootable> */
             $class = $reflection->getName();
-            $boot[] = fn () => $class::boot($container, $reflection);
+            $boot[] = fn() => $class::boot($container, $reflection);
         }
     }
 
@@ -79,7 +79,7 @@ trait Discover
         $source = json_decode(file_get_contents($source), true);
 
         foreach ($source['packages'] as $package) {
-            if (! isset($package['extra']['framework'])) {
+            if (!isset($package['extra']['framework'])) {
                 continue;
             }
 
@@ -100,18 +100,19 @@ trait Discover
     private function discoverFrom(string $root, array $paths)
     {
         foreach ($paths as $namespace => $_path) {
-            if (! is_array($_path)) {
+            if (!is_array($_path)) {
                 $_path = [$_path];
             }
 
             foreach ($_path as $path) {
-                if (! is_dir($path = $root . DIRECTORY_SEPARATOR . $path)) {
+                if (!is_dir($path = $root . DIRECTORY_SEPARATOR . $path)) {
                     continue;
                 }
 
-                $iterator = new \RecursiveIteratorIterator(
-                    new \RecursiveDirectoryIterator($path, \RecursiveDirectoryIterator::SKIP_DOTS),
-                );
+                $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(
+                    $path,
+                    \RecursiveDirectoryIterator::SKIP_DOTS,
+                ));
 
                 foreach ($iterator as $file) {
                     /** @var \SplFileInfo $file */

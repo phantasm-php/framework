@@ -2,8 +2,8 @@
 
 namespace Phantasm\Console;
 
-use Phantasm\Foundation\Attributes\Singleton;
 use Phantasm\Contracts\Console\IO as IOContract;
+use Phantasm\Foundation\Attributes\Singleton;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Input\InputInterface;
@@ -14,7 +14,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 class IO implements IOContract
 {
     public const SUCCESS = Command::SUCCESS;
+
     public const FAILURE = Command::FAILURE;
+
     public const INVALID = Command::INVALID;
 
     public function __construct(
