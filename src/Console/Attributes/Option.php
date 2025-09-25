@@ -6,7 +6,7 @@ namespace Phantasm\Console\Attributes;
 class Option
 {
     public function __construct(
-        public string $description,
+        public string $description = '',
         public array $shortcuts = [],
     ) {}
 }

@@ -28,6 +28,13 @@ class Application implements ApplicationContract
         $this->discover();
     }
 
+    public function version(): ?string
+    {
+        $composer = json_decode(file_get_contents($this->root . '/composer.json'), true);
+
+        return $composer['version'] ?? null;
+    }
+
     public static function instance(?string $root = null): static
     {
         return static::$instance ??= new static($root);

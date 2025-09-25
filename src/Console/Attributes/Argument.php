@@ -6,6 +6,6 @@ namespace Phantasm\Console\Attributes;
 class Argument
 {
     public function __construct(
-        public string $description,
+        public string $description = '',
     ) {}
 }

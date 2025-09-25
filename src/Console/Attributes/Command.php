@@ -49,11 +49,13 @@ class Command implements Bootable
 
     protected static function resolveParameter(\ReflectionParameter $parameter, ConsoleCommand $command, Command $context)
     {
+        $optional = $parameter->isOptional() || $parameter->isDefaultValueAvailable();
+
         $mode = array_sum(array_keys(array_filter([
-            InputArgument::IS_ARRAY => $parameter->isVariadic(),
-            InputArgument::OPTIONAL => $parameter->isOptional() || $parameter->isDefaultValueAvailable(),
-            InputArgument::REQUIRED => ! $parameter->isOptional() && ! $parameter->isDefaultValueAvailable(),
-        ], fn (bool $mode) => $mode === true)));
+            InputArgument::IS_ARRAY => $parameter->isVariadic() || $parameter->getType() == 'array',
+            InputArgument::OPTIONAL => $optional,
+            InputArgument::REQUIRED => ! $optional,
+        ], static fn (bool $mode) => $mode === true)));
 
         foreach ($parameter->getAttributes(Argument::class) as $attribute) {
             $instance = $attribute->newInstance();
