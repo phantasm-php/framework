@@ -6,7 +6,7 @@ use Phantasm\Contracts\Container\Container;
 use Phantasm\Contracts\Foundation\Provider;
 use Phantasm\Container\Binding;
 
-#[\Attribute]
+#[\Attribute(\Attribute::TARGET_CLASS)]
 class Scoped implements Provider
 {
     public readonly array $aliases;
@@ -16,18 +16,13 @@ class Scoped implements Provider
         $this->aliases = $aliases ?? [];
     }
 
-    /** @param static $context */
+    /**
+     * @param \ReflectionClass $reflection
+     * @param static $context
+     */
     public static function register(Container $container, \Reflector $reflection, ?Provider $context): void
     {
-        if (! $context) {
-            return;
-        }
-
-        if (! $reflection instanceof \ReflectionClass) {
-            throw new \Exception('Only classes can be bound into the container.');
-        }
-
-        $container->set($reflection->getName(), null, Binding::SCOPED, $context->aliases);
+        $container->set(Binding::SCOPED, $reflection->getName(), null, $context->aliases);
     }
 
     public static function boot(Container $container, \Reflector $reflection, ?Provider $context): void

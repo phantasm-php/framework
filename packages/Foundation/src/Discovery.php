@@ -158,8 +158,12 @@ class Discovery
             }
         }
 
-        if ($reflection instanceof \ReflectionClass && $reflection->implementsInterface(Provider::class) && $reflection->getName() !== Provider::class) {
-            /** @var class-string<Provider> */
+        if ($reflection instanceof \ReflectionClass
+            && $reflection->implementsInterface(Provider::class)
+            && $reflection->getName() !== Provider::class
+            && !count($reflection->getAttributes(\Attribute::class))
+        ) {
+            /** @var class-string<Provider> $class */
             $class = $reflection->getName();
             $class::register($this->container, $reflection, null);
             array_push($callbacks, fn () => $class::boot($this->container, $reflection, null));
@@ -177,7 +181,11 @@ class Discovery
             }
         }
 
-        if ($reflection instanceof \ReflectionClass && $reflection->implementsInterface(Provider::class) && $reflection->getName() !== Provider::class) {
+        if ($reflection instanceof \ReflectionClass
+            && $reflection->implementsInterface(Provider::class)
+            && $reflection->getName() !== Provider::class
+            && !count($reflection->getAttributes(\Attribute::class))
+        ) {
             return true;
         }
 
