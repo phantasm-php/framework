@@ -1,7 +1,6 @@
 {
-    "name": "phantasm-php/framework",
-    "version": "dev-main",
-    "type": "library",
+    "name": "phantasm/framework",
+    "type": "metapackage",
     "license": "MIT",
     "authors": [
         {
@@ -9,40 +8,20 @@
             "email": "puny.flash@gmail.com"
         }
     ],
+    "repositories": {
+        "local": {
+            "type": "path",
+            "url": "./packages/*",
+            "options": {
+                "symlink": true
+            }
+        }
+    },
     "require": {
-        "vlucas/phpdotenv": "^5.0",
-        "psr/container": "^2.0",
-        "psr/http-server-handler": "^1.0",
-        "psr/http-server-middleware": "^1.0",
-        "psr/http-message": "^2.0",
-        "symfony/console": "^7.3",
-        "psr/event-dispatcher": "^1.0",
-        "guzzlehttp/psr7": "^2.8"
-    },
-    "require-dev": {
-        "pestphp/pest": "^4.1",
-        "carthage-software/mago": "^1.0.0"
-    },
-    "autoload": {
-        "psr-4": {
-            "Phantasm\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Tests\\": "tests/"
-        }
-    },
-    "extra": {
-        "framework": {
-            "discover": true
-        }
-    },
-    "config": {
-        "allow-plugins": {
-            "pestphp/pest-plugin": true,
-            "carthage-software/mago": true
-        }
+        "php": "^8.4",
+        "phantasm/container": "^0.1",
+        "phantasm/contracts": "^0.1",
+        "phantasm/foundation": "^0.1"
     },
     "minimum-stability": "dev",
     "prefer-stable": true

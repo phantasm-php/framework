@@ -1,0 +1,22 @@
+{
+    "name": "phantasm/foundation",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Phantasm\\Foundation\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Dmytro Morozov",
+            "email": "puny.flash@gmail.com"
+        }
+    ],
+    "require": {
+        "phantasm/container": "^0.1",
+        "phantasm/contracts": "^0.1"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

@@ -1,0 +1,22 @@
+{
+    "name": "phantasm/container",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Phantasm\\Container\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Dmytro Morozov",
+            "email": "puny.flash@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.4",
+        "psr/container": "^2.0"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

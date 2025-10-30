@@ -1,0 +1,37 @@
+<?php
+
+namespace Phantasm\Container\Bindings;
+
+use Phantasm\Contracts\Container\Container;
+use Phantasm\Contracts\Foundation\Extension;
+use Phantasm\Container\Binding;
+
+#[\Attribute]
+class Singleton implements Extension
+{
+    public readonly array $aliases;
+
+    public function __construct(string ...$aliases)
+    {
+        $this->aliases = $aliases ?? [];
+    }
+
+    /** @param static $context */
+    public static function register(Container $container, \Reflector $reflection, ?Extension $context): void
+    {
+        if (! $context) {
+            return;
+        }
+
+        if (! $reflection instanceof \ReflectionClass) {
+            throw new \Exception('Only classes can be bound into the container.');
+        }
+
+        $container->set($reflection->getName(), null, Binding::SINGLETON, $context->aliases);
+    }
+
+    public static function boot(Container $container, \Reflector $reflection, ?Extension $context): void
+    {
+        //
+    }
+}

@@ -1,0 +1,21 @@
+{
+    "name": "phantasm/contracts",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Phantasm\\Contracts\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Dmytro Morozov",
+            "email": "puny.flash@gmail.com"
+        }
+    ],
+    "require": {
+        "psr/container": "^2.0"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
