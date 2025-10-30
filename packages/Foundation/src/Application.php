@@ -19,7 +19,7 @@ class Application
 
         $this->container->set(Binding::SINGLETON, static::class, $this);
 
-        new Discovery($this->container)->scan();
+        new Discovery\Finder($this->container)->scan();
     }
 
     public static function instance(): self

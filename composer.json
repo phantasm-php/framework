@@ -11,14 +11,12 @@
     "repositories": {
         "local": {
             "type": "path",
-            "url": "./packages/*",
-            "options": {
-                "symlink": true
-            }
+            "url": "./packages/*"
         }
     },
     "require": {
         "php": "^8.4",
+        "phantasm/console": "^0.1",
         "phantasm/container": "^0.1",
         "phantasm/contracts": "^0.1",
         "phantasm/foundation": "^0.1"

@@ -1,50 +1,23 @@
 <?php
 
-namespace Phantasm\Foundation;
+namespace Phantasm\Foundation\Discovery;
 
 use Composer\InstalledVersions;
-use Composer\Script\Event;
 use Phantasm\Container\Container;
 use Phantasm\Contracts\Foundation\Provider;
 
-class Discovery
+class Finder
 {
     public function __construct(
         protected Container $container,
     ) {}
-
-    public static function cache(Event $event)
-    {
-        $root = dirname($event->getComposer()->getConfig()->get('vendor-dir'));
-        $cachePath = implode(DIRECTORY_SEPARATOR, [$root, 'vendor', 'composer', 'phantasm', 'autoload.php']);
-
-        if (! file_exists($dir = dirname($cachePath))) {
-            mkdir($dir, 0755, true);
-        }
-
-        $references = [];
-
-        foreach (static::fromPackages($root) ?? [] as $path => $class) {
-            if (! $class) {
-                continue;
-            }
-
-            if (static::shouldInstall(new \ReflectionClass($class))) {
-                $references[$path] = $class;
-            }
-        }
-
-        file_put_contents($cachePath, '<?php return ' . var_export($references, true) . ';');
-
-        // TODO: add reporting
-    }
 
     public function scan(bool $preferCache = true)
     {
         $callbacks = [];
         $root = InstalledVersions::getRootPackage()['install_path'];
 
-        if ($preferCache && file_exists($cachePath = implode(DIRECTORY_SEPARATOR, [$root, 'vendor', 'composer', 'phantasm', 'autoload.php']))) {
+        if ($preferCache && file_exists($cachePath = Cache::path($root))) {
             $references = require $cachePath;
 
             foreach ($references as $path => $class) {
@@ -84,7 +57,7 @@ class Discovery
         return static::map($psr4);
     }
 
-    protected static function fromPackages(string $root)
+    public static function fromPackages(string $root)
     {
         $source = implode(DIRECTORY_SEPARATOR, [$root, 'vendor', 'composer', 'installed.json']);
         $source = json_decode(file_get_contents($source), true);
@@ -168,27 +141,5 @@ class Discovery
             $class::register($this->container, $reflection, null);
             array_push($callbacks, fn () => $class::boot($this->container, $reflection, null));
         }
-    }
-
-    protected static function shouldInstall(\ReflectionClass $reflection): bool
-    {
-        foreach ($reflection->getAttributes() as $attribute) {
-            /** @var Provider $instance */
-            $instance = $attribute->newInstance();
-
-            if ($instance instanceof Provider) {
-                return true;
-            }
-        }
-
-        if ($reflection instanceof \ReflectionClass
-            && $reflection->implementsInterface(Provider::class)
-            && $reflection->getName() !== Provider::class
-            && !count($reflection->getAttributes(\Attribute::class))
-        ) {
-            return true;
-        }
-
-        return false;
     }
 }
