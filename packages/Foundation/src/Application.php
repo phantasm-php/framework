@@ -11,21 +11,20 @@ class Application
     protected static ?self $instance = null;
     public readonly ContainerContract $container;
 
-    protected function __construct(
-        public readonly string $root,
-    ) {
+    protected function __construct()
+    {
         define('PHANTASM_START', microtime(true));
 
         $this->container = new Container();
 
-        $this->container->set(static::class, $this, Binding::SINGLETON);
+        $this->container->set(Binding::SINGLETON, static::class, $this);
 
-        new Discovery($this->container)->scan($this->root);
+        new Discovery($this->container)->scan();
     }
 
-    public static function instance(?string $root = null): self
+    public static function instance(): self
     {
-        return self::$instance ??= new self($root);
+        return self::$instance ??= new self();
     }
 
     public static function unload(): void

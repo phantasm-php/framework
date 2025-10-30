@@ -2,8 +2,10 @@
 
 namespace Phantasm\Foundation;
 
+use Composer\InstalledVersions;
+use Composer\Script\Event;
 use Phantasm\Container\Container;
-use Phantasm\Contracts\Foundation\Extension;
+use Phantasm\Contracts\Foundation\Provider;
 
 class Discovery
 {
@@ -11,25 +13,57 @@ class Discovery
         protected Container $container,
     ) {}
 
-    public function scan(string $root, bool $preferCache = true)
+    public static function cache(Event $event)
     {
-        $callbacks = [];
+        $root = dirname($event->getComposer()->getConfig()->get('vendor-dir'));
+        $cachePath = implode(DIRECTORY_SEPARATOR, [$root, 'vendor', 'composer', 'phantasm', 'autoload.php']);
 
-        // TODO: Cache this after dump-autoload. Maybe load anonymous classes?
-        foreach ($this->fromPackages($root) ?? [] as $path => $class) {
-            if (! $class) {
-                continue;
-            }
-
-            $this->load(new \ReflectionClass($class), $callbacks);
+        if (! file_exists($dir = dirname($cachePath))) {
+            mkdir($dir, 0755, true);
         }
 
-        foreach ($this->fromProject($root) ?? [] as $path => $class) {
+        $references = [];
+
+        foreach (static::fromPackages($root) ?? [] as $path => $class) {
             if (! $class) {
                 continue;
             }
 
-            $this->load(new \ReflectionClass($class), $callbacks);
+            if (static::shouldInstall(new \ReflectionClass($class))) {
+                $references[$path] = $class;
+            }
+        }
+
+        file_put_contents($cachePath, '<?php return ' . var_export($references, true) . ';');
+
+        // TODO: add reporting
+    }
+
+    public function scan(bool $preferCache = true)
+    {
+        $callbacks = [];
+        $root = InstalledVersions::getRootPackage()['install_path'];
+
+        if ($preferCache && file_exists($cachePath = implode(DIRECTORY_SEPARATOR, [$root, 'vendor', 'composer', 'phantasm', 'autoload.php']))) {
+            $references = require $cachePath;
+
+            foreach ($references as $path => $class) {
+                static::load(new \ReflectionClass($class), $callbacks);
+            }
+        } else foreach (static::fromPackages($root) ?? [] as $path => $class) {
+            if (! $class) {
+                continue;
+            }
+
+            static::load(new \ReflectionClass($class), $callbacks);
+        }
+
+        foreach (static::fromProject($root) ?? [] as $path => $class) {
+            if (! $class) {
+                continue;
+            }
+
+            static::load(new \ReflectionClass($class), $callbacks);
         }
 
         foreach ($callbacks as $callback) {
@@ -37,7 +71,7 @@ class Discovery
         }
     }
 
-    protected function fromProject(string $root)
+    protected static function fromProject(string $root)
     {
         $source = implode(DIRECTORY_SEPARATOR, [$root, 'composer.json']);
         $source = json_decode(file_get_contents($source), true);
@@ -47,10 +81,10 @@ class Discovery
             $source['autoload']['psr-4']
         );
 
-        return $this->map($psr4);
+        return static::map($psr4);
     }
 
-    protected function fromPackages(string $root)
+    protected static function fromPackages(string $root)
     {
         $source = implode(DIRECTORY_SEPARATOR, [$root, 'vendor', 'composer', 'installed.json']);
         $source = json_decode(file_get_contents($source), true);
@@ -66,11 +100,11 @@ class Discovery
                 $package['autoload']['psr-4']
             );
 
-            yield from $this->map($psr4);
+            yield from static::map($psr4);
         }
     }
 
-    protected function map(array $psr4)
+    protected static function map(array $psr4)
     {
         foreach ($psr4 as $namespace => $path) {
             foreach (is_array($path) ? $path : [$path] as $_path) {
@@ -98,45 +132,55 @@ class Discovery
 
     protected function load(\ReflectionClass $class, array &$callbacks)
     {
-        $this->tryInstall($class, $callbacks);
+        static::tryInstall($class, $callbacks);
 
         foreach ($class->getMethods() as $method) {
-            $this->tryInstall($method, $callbacks);
+            static::tryInstall($method, $callbacks);
         }
 
         foreach ($class->getProperties() as $property) {
-            $this->tryInstall($property, $callbacks);
+            static::tryInstall($property, $callbacks);
         }
     }
 
     /**
      * @param  \Reflector|\ReflectionMethod|\ReflectionProperty|\ReflectionClass  $reflection
      */
-    protected function tryInstall(\Reflector $reflection, array &$callbacks, bool $dryRun = false)
+    protected function tryInstall(\Reflector $reflection, array &$callbacks)
     {
         foreach ($reflection->getAttributes() as $attribute) {
-            /** @var Extension $instance */
+            /** @var Provider $instance */
             $instance = $attribute->newInstance();
 
-            if ($instance instanceof Extension) {
-                if ($dryRun) {
-                    return true;
-                }
-
+            if ($instance instanceof Provider) {
                 $instance->register($this->container, $reflection, $instance);
                 array_push($callbacks, fn () => $instance->boot($this->container, $reflection, $instance));
             }
         }
 
-        if ($reflection instanceof \ReflectionClass && $reflection->implementsInterface(Extension::class) && $reflection->getName() !== Extension::class) {
-            if ($dryRun) {
-                return true;
-            }
-
-            /** @var class-string<Extension> */
+        if ($reflection instanceof \ReflectionClass && $reflection->implementsInterface(Provider::class) && $reflection->getName() !== Provider::class) {
+            /** @var class-string<Provider> */
             $class = $reflection->getName();
             $class::register($this->container, $reflection, null);
             array_push($callbacks, fn () => $class::boot($this->container, $reflection, null));
         }
+    }
+
+    protected static function shouldInstall(\ReflectionClass $reflection): bool
+    {
+        foreach ($reflection->getAttributes() as $attribute) {
+            /** @var Provider $instance */
+            $instance = $attribute->newInstance();
+
+            if ($instance instanceof Provider) {
+                return true;
+            }
+        }
+
+        if ($reflection instanceof \ReflectionClass && $reflection->implementsInterface(Provider::class) && $reflection->getName() !== Provider::class) {
+            return true;
+        }
+
+        return false;
     }
 }

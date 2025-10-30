@@ -59,7 +59,7 @@ class Container implements ContainerContract
         };
     }
 
-    public function set(string $id, $instance = null, BindingContract $binding = Binding::RESOLVE, array $aliases = []): void
+    public function set(BindingContract $binding, string $id, $instance = null, array $aliases = []): void
     {
         $this->bindings[$id] = [$binding, $instance ?? $id];
 

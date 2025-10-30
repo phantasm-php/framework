@@ -6,7 +6,7 @@ use Psr\Container\ContainerInterface;
 
 interface Container extends ContainerInterface
 {
-    public function set(string $id, $instance = null, Binding $binding, array $aliases = []): void;
+    public function set(Binding $binding, string $id, $instance = null, array $aliases = []): void;
 
     public function resolve(string $id): mixed;
 }
