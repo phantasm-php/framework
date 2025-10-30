@@ -14,6 +14,7 @@
         }
     ],
     "require": {
+        "php": "^8.4",
         "phantasm/container": "^0.1",
         "phantasm/contracts": "^0.1"
     },
