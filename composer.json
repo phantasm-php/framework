@@ -16,10 +16,10 @@
     },
     "require": {
         "php": "^8.4",
-        "phantasm/console": "^0.1",
-        "phantasm/container": "^0.1",
-        "phantasm/contracts": "^0.1",
-        "phantasm/foundation": "^0.1"
+        "phantasm/console": "dev-main",
+        "phantasm/container": "dev-main",
+        "phantasm/contracts": "dev-main",
+        "phantasm/foundation": "dev-main"
     },
     "minimum-stability": "dev",
     "prefer-stable": true

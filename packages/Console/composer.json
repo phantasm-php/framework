@@ -15,7 +15,7 @@
     ],
     "require": {
         "php": "^8.4",
-        "phantasm/contracts": "^0.1"
+        "phantasm/contracts": "dev-main"
     },
     "minimum-stability": "dev",
     "prefer-stable": true

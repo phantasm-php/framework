@@ -7,13 +7,17 @@ use Phantasm\Contracts\Container\Container as ContainerContract;
 
 class Container implements ContainerContract
 {
+    /** @var array<string, array{BindingContract, mixed}> */
     protected array $bindings = [];
 
+    /** @var array<string, mixed> */
     protected array $instances = [];
 
-    protected array $aliases = [];
-
+    /** @var array<string, mixed> */
     protected array $scoped = [];
+
+    /** @var array<string, string> */
+    protected array $aliases = [];
 
     public function has(string $id): bool
     {

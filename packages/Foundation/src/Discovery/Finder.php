@@ -4,7 +4,7 @@ namespace Phantasm\Foundation\Discovery;
 
 use Composer\InstalledVersions;
 use Phantasm\Container\Container;
-use Phantasm\Contracts\Foundation\Provider;
+use Phantasm\Contracts\Foundation\Extension;
 
 class Finder
 {
@@ -12,7 +12,7 @@ class Finder
         protected Container $container,
     ) {}
 
-    public function scan(bool $preferCache = true)
+    public function scan(string $search, bool $preferCache)
     {
         $callbacks = [];
         $root = InstalledVersions::getRootPackage()['install_path'];
@@ -21,14 +21,14 @@ class Finder
             $references = require $cachePath;
 
             foreach ($references as $path => $class) {
-                static::load(new \ReflectionClass($class), $callbacks);
+                $callbacks += static::load(new \ReflectionClass($class), $search);
             }
         } else foreach (static::fromPackages($root) ?? [] as $path => $class) {
             if (! $class) {
                 continue;
             }
 
-            static::load(new \ReflectionClass($class), $callbacks);
+            $callbacks += static::load(new \ReflectionClass($class), $search);
         }
 
         foreach (static::fromProject($root) ?? [] as $path => $class) {
@@ -36,7 +36,7 @@ class Finder
                 continue;
             }
 
-            static::load(new \ReflectionClass($class), $callbacks);
+            $callbacks += static::load(new \ReflectionClass($class), $search);
         }
 
         foreach ($callbacks as $callback) {
@@ -103,43 +103,45 @@ class Finder
         }
     }
 
-    protected function load(\ReflectionClass $class, array &$callbacks)
+    protected function load(\ReflectionClass $class, string $search): array
     {
-        static::tryInstall($class, $callbacks);
+        $callbacks = $this->tryInstall($class, $search);
 
         foreach ($class->getMethods() as $method) {
-            static::tryInstall($method, $callbacks);
+            $callbacks += $this->tryInstall($method, $search);
         }
 
         foreach ($class->getProperties() as $property) {
-            static::tryInstall($property, $callbacks);
+            $callbacks += $this->tryInstall($property, $search);
         }
+
+        return $callbacks;
     }
 
     /**
-     * @param  \Reflector|\ReflectionMethod|\ReflectionProperty|\ReflectionClass  $reflection
+     * @param \Reflector|\ReflectionMethod|\ReflectionProperty|\ReflectionClass $reflection
+     * @param class-string $search
      */
-    protected function tryInstall(\Reflector $reflection, array &$callbacks)
+    protected function tryInstall(\Reflector $reflection, string $search): array
     {
-        foreach ($reflection->getAttributes() as $attribute) {
-            /** @var Provider $instance */
-            $instance = $attribute->newInstance();
+        $callbacks = [];
 
-            if ($instance instanceof Provider) {
-                $instance->register($this->container, $reflection, $instance);
-                array_push($callbacks, fn () => $instance->boot($this->container, $reflection, $instance));
-            }
+        foreach ($reflection->getAttributes($search, \ReflectionAttribute::IS_INSTANCEOF) as $attribute) {
+            /** @var Extension $instance */
+            $instance = $attribute->newInstance();
+            $callbacks[] = $instance->install($this->container, $reflection, $instance);
         }
 
         if ($reflection instanceof \ReflectionClass
-            && $reflection->implementsInterface(Provider::class)
-            && $reflection->getName() !== Provider::class
+            && $reflection->implementsInterface($search)
+            && $reflection->getName() !== $search
             && !count($reflection->getAttributes(\Attribute::class))
         ) {
-            /** @var class-string<Provider> $class */
+            /** @var class-string<Extension> $class */
             $class = $reflection->getName();
-            $class::register($this->container, $reflection, null);
-            array_push($callbacks, fn () => $class::boot($this->container, $reflection, null));
+            $callbacks[] = $class::install($this->container, $reflection, null);
         }
+
+        return array_values(array_filter($callbacks));
     }
 }

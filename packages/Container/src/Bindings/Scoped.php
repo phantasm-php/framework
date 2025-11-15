@@ -3,11 +3,11 @@
 namespace Phantasm\Container\Bindings;
 
 use Phantasm\Contracts\Container\Container;
-use Phantasm\Contracts\Foundation\Provider;
+use Phantasm\Contracts\Foundation\Extension;
 use Phantasm\Container\Binding;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
-class Scoped implements Provider
+class Scoped implements Extension
 {
     public readonly array $aliases;
 
@@ -17,16 +17,11 @@ class Scoped implements Provider
     }
 
     /**
+     * {@inheritDoc}
      * @param \ReflectionClass $reflection
-     * @param static $context
      */
-    public static function register(Container $container, \Reflector $reflection, ?Provider $context): void
+    public static function install(Container $container, \Reflector $reflection, ?Extension $context): ?callable
     {
-        $container->set(Binding::SCOPED, $reflection->getName(), null, $context->aliases);
-    }
-
-    public static function boot(Container $container, \Reflector $reflection, ?Provider $context): void
-    {
-        //
+        return $container->set(Binding::SCOPED, $reflection->getName(), null, $context->aliases);
     }
 }
