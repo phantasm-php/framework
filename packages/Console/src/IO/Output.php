@@ -2,36 +2,54 @@
 
 namespace Phantasm\Console\IO;
 
+/**
+ * @method self info(string $message, bool $eol = true)
+ * @method self success(string $message, bool $eol = true)
+ * @method self warning(string $message, bool $eol = true)
+ * @method self error(string $message, bool $eol = true)
+ * @method self comment(string $message, bool $eol = true)
+ */
 class Output
 {
+    const INFO = [Format::CYAN];
+    const SUCCESS = [Format::GREEN];
+    const WARNING = [Format::YELLOW];
+    const ERROR = [Format::RED];
+    const COMMENT = [Format::ITALIC, Format::DIM];
+
     protected $stream;
-    protected Theme $theme;
     protected bool $decorated;
+    public readonly array $styles;
 
     public function __construct(
         $stream = STDOUT,
-        ?Theme $theme = null,
-        ?bool $decorated = null
+        ?bool $decorated = null,
+        array $styles = []
     ) {
-        $this->theme = $theme ?? new Theme();
         $this->stream = $stream;
         $this->decorated = $decorated ?? $this->hasColorSupport();
+        $this->styles = $styles;
     }
 
     /**
-     * Write a message to output
+     * Write a message to output stream using predefined style or custom formatting
      */
-    public function write(string $message, bool $eol = true): void
+    public function write(string $message, bool $eol = true, array $style = []): self
     {
-        $output = $this->decorated ? $message : $this->stripAnsiCodes($message);
-        fwrite($this->stream, $output . ($eol ? PHP_EOL : ''));
+        $message = $this->decorated
+            ? Format::apply($message, ...$style)
+            : preg_replace('/\033\[[0-9;]*m/', '', $message);
+
+        fwrite($this->stream, $message . ($eol ? PHP_EOL : ''));
+
+        return $this;
     }
 
-    public function __call(string $name, array $arguments): void
+    public function __call(string $name, array $arguments)
     {
-        $arguments[0] = $this->theme->apply($name, $arguments[0]);
+        $style = isset($this->styles[$name]) ? $this->styles[$name] : self::{strtoupper($name)};
 
-        $this->write(...$arguments);
+        return $this->write(...$arguments, style: $style);
     }
 
     /**
@@ -58,9 +76,6 @@ class Output
         $this->decorated = $decorated;
     }
 
-    /**
-     * Detect if the terminal supports colors
-     */
     protected function hasColorSupport(): bool
     {
         if (DIRECTORY_SEPARATOR === '\\') {
@@ -71,13 +86,5 @@ class Output
         }
 
         return function_exists('posix_isatty') && posix_isatty($this->stream);
-    }
-
-    /**
-     * Strip ANSI codes from a string
-     */
-    protected function stripAnsiCodes(string $string): string
-    {
-        return preg_replace('/\033\[[0-9;]*m/', '', $string);
     }
 }
