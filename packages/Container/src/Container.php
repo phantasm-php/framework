@@ -19,11 +19,13 @@ class Container implements ContainerContract
     /** @var array<string, string> */
     protected array $aliases = [];
 
+    #[\Override]
     public function has(string $id): bool
     {
         return isset($this->bindings[$id]);
     }
 
+    #[\Override]
     public function get(string $id, bool $resolve = false): mixed
     {
         if (isset($this->aliases[$id])) {
@@ -38,7 +40,7 @@ class Container implements ContainerContract
             return $this->scoped[$id];
         }
 
-        if (! isset($this->bindings[$id])) {
+        if (!isset($this->bindings[$id])) {
             return $resolve
                 ? $this->resolve($id)
                 : throw new \InvalidArgumentException("Container doesn't have a binding for `{$id}`");
@@ -63,18 +65,20 @@ class Container implements ContainerContract
         };
     }
 
+    #[\Override]
     public function set(BindingContract $binding, string $id, $instance = null, array $aliases = []): void
     {
         $this->bindings[$id] = [$binding, $instance ?? $id];
 
-        $aliases = array_map(static fn () => $id, array_flip($aliases));
+        $aliases = array_map(static fn() => $id, array_flip($aliases));
 
         $this->aliases = array_merge($this->aliases, $aliases);
     }
 
+    #[\Override]
     public function resolve(string $id): mixed
     {
-        if (! class_exists($id)) {
+        if (!class_exists($id)) {
             throw new \InvalidArgumentException("Can't resolve binding for `{$id}`. Class doesn't exist.");
         }
 

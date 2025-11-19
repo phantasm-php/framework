@@ -2,9 +2,9 @@
 
 namespace Phantasm\Container\Bindings;
 
+use Phantasm\Container\Binding;
 use Phantasm\Contracts\Container\Container;
 use Phantasm\Contracts\Foundation\Extension;
-use Phantasm\Container\Binding;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
 class Bind implements Extension
@@ -20,7 +20,8 @@ class Bind implements Extension
      * @param \ReflectionClass $reflection
      * @param static $context
      */
-    public static function install(Container $container, \Reflector $reflection, ?Extension $context): ?callable
+    #[\Override]
+    public static function install(Container $container, \Reflector $reflection, null|Extension $context): null|callable
     {
         return $container->set(Binding::RESOLVE, $reflection->getName(), null, $context->aliases);
     }

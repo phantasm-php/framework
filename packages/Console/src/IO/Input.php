@@ -7,26 +7,26 @@ class Input
     /**
      * Console command
      */
-    readonly public string $command;
+    public readonly string $command;
 
     /**
      * Console arguments
      */
-    readonly public array $arguments;
+    public readonly array $arguments;
 
     /**
      * Console options
      */
-    readonly public array $options;
+    public readonly array $options;
 
     /**
      * Short options mapping
      */
     protected array $shortMap = [];
 
-    public function __construct(?array $arguments = null)
+    public function __construct(null|array $arguments = null)
     {
-        if (! is_null($arguments)) {
+        if (!is_null($arguments)) {
             $argc = count($arguments);
             $argv = $arguments;
         } else {
@@ -37,8 +37,7 @@ class Input
         $this->command = array_shift($argv);
         $options = $arguments = [];
 
-
-        for($i = 0; $i < count($argv); $i++) {
+        for ($i = 0; $i < count($argv); $i++) {
             $arg = $argv[$i];
 
             if (preg_match('/^--([^=]+)=(.*)$/', $arg, $matches)) {
@@ -52,15 +51,11 @@ class Input
                     if (isset($argv[$i + 1]) && !str_starts_with($argv[$i + 1], '-')) {
                         $options[$flags[0]] = $argv[++$i];
                     } else {
-                        $options[$flags[0]] = isset($options[$flags[0]])
-                            ? $options[$flags[0]] + 1
-                            : 1;
+                        $options[$flags[0]] = isset($options[$flags[0]]) ? $options[$flags[0]] + 1 : 1;
                     }
                 } else {
                     foreach ($flags as $flag) {
-                        $options[$flag] = isset($options[$flag])
-                            ? $options[$flag] + 1
-                            : 1;
+                        $options[$flag] = isset($options[$flag]) ? $options[$flag] + 1 : 1;
                     }
                 }
             } else {

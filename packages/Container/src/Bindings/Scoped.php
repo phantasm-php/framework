@@ -2,9 +2,9 @@
 
 namespace Phantasm\Container\Bindings;
 
+use Phantasm\Container\Binding;
 use Phantasm\Contracts\Container\Container;
 use Phantasm\Contracts\Foundation\Extension;
-use Phantasm\Container\Binding;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
 class Scoped implements Extension
@@ -20,8 +20,9 @@ class Scoped implements Extension
      * {@inheritDoc}
      * @param \ReflectionClass $reflection
      */
-    public static function install(Container $container, \Reflector $reflection, ?Extension $context): ?callable
+    #[\Override]
+    public static function install(Container $container, \Reflector $reflection, null|Extension $context): null|callable
     {
-        return $container->set(Binding::SCOPED, $reflection->getName(), null, $context->aliases);
+        return $container->set(Binding::SCOPED, $reflection->getName(), null, $context?->aliases);
     }
 }

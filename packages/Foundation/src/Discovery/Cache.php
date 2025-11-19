@@ -3,7 +3,7 @@
 namespace Phantasm\Foundation\Discovery;
 
 use Composer\Script\Event;
-use Phantasm\Contracts\Foundation\Provider;
+use Phantasm\Contracts\Foundation\Extension;
 
 class Cache
 {
@@ -17,14 +17,14 @@ class Cache
         $root = dirname($event->getComposer()->getConfig()->get('vendor-dir'));
         $cachePath = static::path($root);
 
-        if (! file_exists($dir = dirname($cachePath))) {
+        if (!file_exists($dir = dirname($cachePath))) {
             mkdir($dir, 0755, true);
         }
 
         $references = [];
 
         foreach (Finder::fromPackages($root) ?? [] as $path => $class) {
-            if (! $class) {
+            if (!$class) {
                 continue;
             }
 
@@ -35,7 +35,7 @@ class Cache
 
         file_put_contents($cachePath, '<?php return ' . var_export($references, true) . ';');
 
-        // TODO: add reporting
+        // TODO(@punyflash): add reporting
     }
 
     public static function shouldInstall(\ReflectionClass $reflection): bool
@@ -44,14 +44,15 @@ class Cache
             /** @var Provider $instance */
             $instance = $attribute->newInstance();
 
-            if ($instance instanceof Provider) {
+            if ($instance instanceof Extension) {
                 return true;
             }
         }
 
-        if ($reflection instanceof \ReflectionClass
-            && $reflection->implementsInterface(Provider::class)
-            && $reflection->getName() !== Provider::class
+        if (
+            $reflection instanceof \ReflectionClass
+            && $reflection->implementsInterface(Extension::class)
+            && $reflection->getName() !== Extension::class
             && !count($reflection->getAttributes(\Attribute::class))
         ) {
             return true;

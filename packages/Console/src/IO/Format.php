@@ -51,7 +51,7 @@ enum Format: int
     case BG_BRIGHT_CYAN = 106;
     case BG_BRIGHT_WHITE = 107;
 
-    public static function color(int $r, ?int $g = null, ?int $b = null): string
+    public static function color(int $r, null|int $g = null, null|int $b = null): string
     {
         if (!is_null($g) && !is_null($b)) {
             return "38;2;{$r};{$g};{$b}";
@@ -60,7 +60,7 @@ enum Format: int
         return "38;5;{$r}";
     }
 
-    public static function bg(int $r, ?int $g = null, ?int $b = null): string
+    public static function bg(int $r, null|int $g = null, null|int $b = null): string
     {
         if (!is_null($g) && !is_null($b)) {
             return "48;2;{$r};{$g};{$b}";
@@ -75,10 +75,9 @@ enum Format: int
             return $text;
         }
 
-        $formats = array_map(
-            static fn (Format|int|string $format) => $format instanceof Format ? $format->value : (string) $format,
-            $formats
-        );
+        $formats = array_map(static fn(Format|int|string $format) => $format instanceof Format
+            ? $format->value
+            : (string) $format, $formats);
 
         return sprintf("\033[%sm%s\033[0m", implode(';', $formats), $text);
     }

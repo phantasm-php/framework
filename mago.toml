@@ -1,0 +1,41 @@
+# Welcome to Mago!
+# For full documentation, see https://mago.carthage.software/tools/overview
+php-version = "8.4.0"
+
+[source]
+paths = ["packages"]
+includes = ["vendor"]
+excludes = []
+extensions = ["php"]
+
+[formatter]
+print-width = 120
+tab-width = 4
+use-tabs = false
+
+[linter]
+integrations = []
+
+[linter.rules]
+ambiguous-function-call = { enabled = false }
+literal-named-argument = { enabled = false }
+halstead = { enabled = false }
+strict-types = { enabled = false }
+no-empty = { enabled = false }
+too-many-enum-cases = { enabled = false }
+no-else-clause = { enabled = false }
+no-boolean-flag-parameter = { enabled = false }
+kan-defect = { enabled = false }
+cyclomatic-complexity = { enabled = false }
+class-name = { enabled = false }
+interface-name = { enabled = false }
+no-multi-assignments = { enabled = false }
+explicit-octal = { enabled = false }
+
+[analyzer]
+find-unused-definitions = true
+find-unused-expressions = false
+analyze-dead-code = false
+check-throws = false
+allow-possibly-undefined-array-keys = false
+perform-heuristic-checks = true

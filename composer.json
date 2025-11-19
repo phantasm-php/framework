@@ -21,6 +21,14 @@
         "phantasm/contracts": "dev-main",
         "phantasm/foundation": "dev-main"
     },
+    "require-dev": {
+        "carthage-software/mago": "^0.26.1"
+    },
     "minimum-stability": "dev",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "config": {
+        "allow-plugins": {
+            "carthage-software/mago": true
+        }
+    }
 }

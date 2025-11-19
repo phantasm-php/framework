@@ -13,8 +13,7 @@ class Application
 
     protected function __construct()
     {
-        new Discovery\Finder(static::$container)
-            ->scan(Extension::class, true);
+        new Discovery\Finder($this->container())->scan(Extension::class, true);
     }
 
     public function container(): ContainerContract
@@ -32,9 +31,9 @@ class Application
 
     public static function instance(): static
     {
-        if (! isset(static::$container)) {
+        if (!isset(static::$container)) {
             static::$container = new Container();
-            static::$container->set(Binding::SINGLETON, static::class, new static);
+            static::$container->set(Binding::SINGLETON, static::class, new static());
         }
 
         return static::$container->get(static::class);
