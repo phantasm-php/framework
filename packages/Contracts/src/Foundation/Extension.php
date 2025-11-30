@@ -12,6 +12,6 @@ interface Extension
     public static function install(
         Container $container,
         \Reflector $reflection,
-        null|Extension $context,
-    ): null|callable;
+        ?Extension $context,
+    ): ?callable;
 }

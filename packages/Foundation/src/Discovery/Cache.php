@@ -3,6 +3,7 @@
 namespace Phantasm\Foundation\Discovery;
 
 use Composer\Script\Event;
+use Phantasm\Console\IO\Output;
 use Phantasm\Contracts\Foundation\Extension;
 
 class Cache
@@ -14,6 +15,7 @@ class Cache
 
     public static function postAutoloadDump(Event $event): void
     {
+        $output = new Output();
         $root = dirname($event->getComposer()->getConfig()->get('vendor-dir'));
         $cachePath = static::path($root);
 
@@ -30,12 +32,13 @@ class Cache
 
             if (static::shouldInstall(new \ReflectionClass($class))) {
                 $references[$path] = $class;
+                $output->info(" + {$class}");
             }
         }
 
         file_put_contents($cachePath, '<?php return ' . var_export($references, true) . ';');
 
-        // TODO(@punyflash): add reporting
+        $output->success("Autoload caching completed.");
     }
 
     public static function shouldInstall(\ReflectionClass $reflection): bool

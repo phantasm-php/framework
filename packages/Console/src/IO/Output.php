@@ -2,6 +2,8 @@
 
 namespace Phantasm\Console\IO;
 
+use Phantasm\Contracts\Console\IO\Output as OutputInterface;
+
 /**
  * @method self info(string $message, int|bool $eol = 1)
  * @method self success(string $message, int|bool $eol = 1)
@@ -9,7 +11,7 @@ namespace Phantasm\Console\IO;
  * @method self error(string $message, int|bool $eol = 1)
  * @method self comment(string $message, int|bool $eol = 1)
  */
-class Output
+class Output implements OutputInterface
 {
     const INFO = [Format::CYAN];
     const SUCCESS = [Format::GREEN];
@@ -44,7 +46,9 @@ class Output
 
     public function __call(string $name, array $arguments)
     {
-        $style = isset($this->styles[$name]) ? $this->styles[$name] : self::{strtoupper($name)};
+        if (!$style = isset($this->styles[$name]) ? $this->styles[$name] : self::{strtoupper($name)} ?? null) {
+            throw new \BadMethodCallException(sprintf('Undefined style "%s".', $name));
+        }
 
         $arguments[1] ??= true;
 

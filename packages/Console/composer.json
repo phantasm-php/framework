@@ -17,6 +17,11 @@
         "php": "^8.4",
         "phantasm/contracts": "dev-main"
     },
+    "extra": {
+        "phantasm": {
+            "discover": true
+        }
+    },
     "minimum-stability": "dev",
     "prefer-stable": true
 }

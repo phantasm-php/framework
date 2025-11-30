@@ -2,7 +2,9 @@
 
 namespace Phantasm\Console\IO;
 
-class Input
+use Phantasm\Contracts\Console\IO\Input as InputContract;
+
+class Input implements InputContract
 {
     /**
      * Console command
